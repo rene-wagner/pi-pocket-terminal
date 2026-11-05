@@ -10,7 +10,7 @@ export default function setup(pocket) {
   pocket.style('terminal.css');
   const { html, useState, useEffect, useLayoutEffect, useRef } = pocket;
   const call = (path, method = 'GET', body, signal) => pocket.api(path, body, { method, signal });
-  const statusLabels = { connecting: 'Verbinden …', online: 'Verbunden', disconnected: 'Verbindung unterbrochen', closed: 'Terminal geschlossen' };
+  const statusLabels = { connecting: 'Connecting …', online: 'Connected', disconnected: 'Disconnected', closed: 'Terminal closed' };
 
   function useSettings() {
     const [settings, setSettings] = useState(DEFAULT_SETTINGS);
@@ -23,7 +23,7 @@ export default function setup(pocket) {
           const result = await pocket.settings();
           if (alive && current === generation) { setSettings(normalizeSettings(result.values)); setFailure(''); }
         } catch {
-          if (alive && current === generation) setFailure('Einstellungen konnten nicht geladen werden. Standardwerte sind aktiv.');
+          if (alive && current === generation) setFailure('Could not load settings. Using defaults.');
         }
       };
       const stop = typeof pocket.onSettings === 'function' ? pocket.onSettings(load) : () => {};
@@ -66,7 +66,7 @@ export default function setup(pocket) {
           if (!current()) return;
           inputFailed = true;
           connection('disconnected');
-          onError(`${error.message} Die letzte Eingabe wurde möglicherweise bereits übertragen. Nicht gesendete Eingaben wurden verworfen; bitte neu verbinden.`);
+          onError(`${error.message} The last input may already have been sent. Unsent input was discarded; please reconnect.`);
         },
       });
       const vibrate = () => {
@@ -115,14 +115,14 @@ export default function setup(pocket) {
             // query replies while it writes output, and disableStdin would discard those replies.
             if (out.closed) connection('closed');
             else if (!inputFailed) connection('online');
-            if (out.truncated) term.write('\r\n[Ältere Ausgabe verworfen]\r\n');
+            if (out.truncated) term.write('\r\n[Older output discarded]\r\n');
             if (out.data) await new Promise(resolve => {
               wakeWrite = resolve;
               term.write(out.data, () => { wakeWrite = undefined; resolve(); });
             });
             if (!alive) break;
             cursor = out.cursor;
-            if (out.closed) { term.write('\r\n[Terminal geschlossen]\r\n'); connection('closed'); break; }
+            if (out.closed) { term.write('\r\n[Terminal closed]\r\n'); connection('closed'); break; }
           } catch (error) {
             if (!alive) break;
             // pocket.api exposes HTTP status as `status` (not a response object).
@@ -220,14 +220,14 @@ export default function setup(pocket) {
       catch (failure) { setError(failure.message); } finally { setBusy(false); }
     };
     const remove = async id => {
-      if (!confirm('Terminal und laufende Prozesse wirklich beenden?')) return;
+      if (!confirm('Close this terminal and stop its running processes?')) return;
       // Stop local input before the close request, including clicks before the next redraw.
       if (selected.current === id) target.current?.deactivate();
       try { await call(`sessions/${id}`, 'DELETE'); await refresh(); }
       catch (failure) { setError(failure.message); /* Only an explicit reconnect can reactivate uncertain input. */ }
     };
     const rename = async session => {
-      const name = prompt('Name des Terminals', session.name);
+      const name = prompt('Terminal name', session.name);
       if (name === null) return;
       try { await call(`sessions/${session.id}`, 'PATCH', { name }); await refresh(); }
       catch (failure) { setError(failure.message); }
@@ -242,7 +242,7 @@ export default function setup(pocket) {
     const modifierButton = (label, key) => {
       const state = view.id === active ? view.modifiers[key] : 'off';
       return html`<button type="button" disabled=${!online} class=${'pt-key pt-modifier ' + (settings.highlightModifiers && state !== 'off' ? 'is-active ' : '') + (state === 'locked' ? 'is-locked' : '')}
-        aria-label=${`${label}: ${state === 'locked' ? 'eingerastet' : state === 'once' ? 'nächste Eingabe' : 'aus'}`}
+        aria-label=${`${label}: ${state === 'locked' ? 'locked' : state === 'once' ? 'next input' : 'off'}`}
         aria-pressed=${state !== 'off'} onMouseDown=${keepFocus} onClick=${() => modifier(key)}>${label}${state === 'locked' ? ' ▣' : state === 'once' ? ' •' : ''}</button>`;
     };
     const reconnect = async () => {
@@ -250,33 +250,33 @@ export default function setup(pocket) {
       try { await refresh(); setRevision(n => n + 1); } catch { /* refresh shows the error; no stale session is reactivated */ }
     };
     return html`<div class="pt-root" ref=${root}>
-      <div class="pt-toolbar" key="toolbar"><div class="pt-tabs" aria-label="Terminal-Sitzungen">${tabs.map(session => html`<div class=${'pt-tab ' + (active === session.id ? 'selected' : '')} key=${session.id}>
+      <div class="pt-toolbar" key="toolbar"><div class="pt-tabs" aria-label="Terminal sessions">${tabs.map(session => html`<div class=${'pt-tab ' + (active === session.id ? 'selected' : '')} key=${session.id}>
         <button type="button" class="pt-select" aria-pressed=${active === session.id} onClick=${() => choose(session.id)}>${session.name}</button>
-        <button type="button" title="Umbenennen" aria-label=${`${session.name} umbenennen`} onClick=${() => rename(session)}>✎</button>
-        <button type="button" title="Schließen" aria-label=${`${session.name} schließen`} onClick=${() => remove(session.id)}>×</button>
+        <button type="button" title="Rename" aria-label=${`Rename ${session.name}`} onClick=${() => rename(session)}>✎</button>
+        <button type="button" title="Close" aria-label=${`Close ${session.name}`} onClick=${() => remove(session.id)}>×</button>
       </div>`)}</div><button type="button" class="button" disabled=${busy} onClick=${create}>+ Terminal</button></div>
-      ${(error || settingsError) && html`<div class="error-box pt-error" key="error" role="alert"><span>${error || settingsError}</span>${error && html`<button type="button" aria-label="Fehlermeldung schließen" onClick=${() => setError('')}>×</button>`}</div>`}
-      <div class="pt-body" key="body">${active ? html`<${TerminalView} key=${`${active}:${revision}`} id=${active} target=${target} selected=${selected} settings=${settings} onState=${setView} onError=${setError}/>` : html`<div class="pt-empty">Noch kein Terminal geöffnet. Tippe auf „+ Terminal“.</div>`}</div>
-      ${visible && html`<div class="pt-keybar" key="keybar" aria-label="Terminal-Sondertasten" data-no-swipe>
-        <div class="pt-key-row" role="group" aria-label="Standardtasten">
+      ${(error || settingsError) && html`<div class="error-box pt-error" key="error" role="alert"><span>${error || settingsError}</span>${error && html`<button type="button" aria-label="Dismiss error" onClick=${() => setError('')}>×</button>`}</div>`}
+      <div class="pt-body" key="body">${active ? html`<${TerminalView} key=${`${active}:${revision}`} id=${active} target=${target} selected=${selected} settings=${settings} onState=${setView} onError=${setError}/>` : html`<div class="pt-empty">No terminal open yet. Tap “+ Terminal” to get started.</div>`}</div>
+      ${visible && html`<div class="pt-keybar" key="keybar" aria-label="Terminal extra keys" data-no-swipe>
+        <div class="pt-key-row" role="group" aria-label="Standard keys">
           ${keyButton('Esc', 'Escape', 'Escape')}${keyButton('Tab')}${modifierButton('Ctrl', 'ctrl')}${modifierButton('Alt', 'alt')}
           ${!extended && view.id === active && view.modifiers.shift !== 'off' && modifierButton('Shift', 'shift')}
-          ${keyButton('↑', 'ArrowUp', 'Pfeil nach oben')}${keyButton('↓', 'ArrowDown', 'Pfeil nach unten')}${keyButton('←', 'ArrowLeft', 'Pfeil nach links')}${keyButton('→', 'ArrowRight', 'Pfeil nach rechts')}${keyButton('Enter')}
-          <button type="button" class="pt-key pt-more" aria-expanded=${extended} aria-label="Erweiterte Tasten" onMouseDown=${keepFocus} onClick=${() => { setExtended(value => !value); current()?.focus(); }}>${extended ? 'Weniger' : 'Mehr'}</button>
+          ${keyButton('↑', 'ArrowUp', 'Arrow up')}${keyButton('↓', 'ArrowDown', 'Arrow down')}${keyButton('←', 'ArrowLeft', 'Arrow left')}${keyButton('→', 'ArrowRight', 'Arrow right')}${keyButton('Enter')}
+          <button type="button" class="pt-key pt-more" aria-expanded=${extended} aria-label="Extended keys" onMouseDown=${keepFocus} onClick=${() => { setExtended(value => !value); current()?.focus(); }}>${extended ? 'Less' : 'More'}</button>
         </div>
-        ${extended && html`<div class="pt-key-row" role="group" aria-label="Erweiterte Tasten">
+        ${extended && html`<div class="pt-key-row" role="group" aria-label="Extended keys">
           ${modifierButton('Shift', 'shift')}${['Home', 'End', 'PageUp', 'PageDown', 'Insert', 'Delete', 'Backspace'].map((key, n) => keyButton(['Home', 'End', 'PgUp', 'PgDn', 'Ins', 'Del', '⌫'][n], key))}
           ${Array.from({ length: 12 }, (_, n) => keyButton(`F${n + 1}`))}
           <span class="pt-key-divider" aria-hidden="true"></span>
           ${['/', '-', '|', '~', '\\', '[', ']', '{', '}'].map(character => keyButton(character))}
         </div>`}
       </div>`}
-      <div class="pt-footer" key="footer"><button type="button" disabled=${!online} onMouseDown=${keepFocus} onClick=${() => current()?.focus()}>Tastatur</button>
-        <span class="pt-connection" role="status">${active ? statusLabels[view.id === active ? view.status : 'connecting'] : 'Keine Sitzung'}</span>
-        ${active && html`<button type="button" onClick=${reconnect}>Neu verbinden</button>`}
-        <button type="button" aria-expanded=${help} onClick=${() => setHelp(value => !value)}>Einstellungen</button>
+      <div class="pt-footer" key="footer"><button type="button" disabled=${!online} onMouseDown=${keepFocus} onClick=${() => current()?.focus()}>Keyboard</button>
+        <span class="pt-connection" role="status">${active ? statusLabels[view.id === active ? view.status : 'connecting'] : 'No session'}</span>
+        ${active && html`<button type="button" onClick=${reconnect}>Reconnect</button>`}
+        <button type="button" aria-expanded=${help} onClick=${() => setHelp(value => !value)}>Settings</button>
       </div>
-      ${help && html`<div class="pt-help" key="help">Menü → Extensions → terminal: Sichtbarkeit (Automatisch / Immer / Nie), erweiterte Tasten beim Öffnen, Modifier-Hervorhebung, Haptik und Einrasten. Doppeltippen rastet Modifier nur bei aktivierter Einstellung ein. IME-Kompositionen und eingefügter Text bleiben unverändert.</div>`}
+      ${help && html`<div class="pt-help" key="help">Menu → Extensions → terminal: visibility (Auto / Always / Never), extended keys on opening, modifier highlighting, haptic feedback, and modifier locking. Double-tap locks modifiers only when enabled in settings. IME compositions and pasted text remain unchanged.</div>`}
     </div>`;
   }
   pocket.page({ id: 'terminal', title: 'Terminal', component: Page, escape: false, swipe: false });

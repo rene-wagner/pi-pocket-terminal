@@ -31,7 +31,7 @@ setup({
     }
     const [_, id, operation] = path.match(/^sessions\/([^/]+)(?:\/(.*))?$/) || [];
     const session = sessions.get(id);
-    if (!session) throw Object.assign(new Error('Terminal nicht gefunden'), { status: 404 });
+    if (!session) throw Object.assign(new Error('Terminal not found'), { status: 404 });
     if (operation === 'input') { inputs.push({ id, data: body.data }); return { ok: true }; }
     if (operation === 'resize') { if (mock.resizeDelay) await new Promise(resolve => setTimeout(resolve, mock.resizeDelay)); resizes.push({ id, ...body }); return { ok: true }; }
     if (operation?.startsWith('output')) {

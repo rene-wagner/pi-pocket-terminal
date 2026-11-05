@@ -19,7 +19,7 @@ function getPty() {
   for (const candidate of candidates) {
     try { ptyModule = require(candidate); return ptyModule; } catch { /* try next */ }
   }
-  throw new Error('node-pty fehlt. Bitte das Installationsskript ausführen.');
+  throw new Error('node-pty is missing. Please run the installation script.');
 }
 function wake(s: Session) { for (const w of s.waiters) w(); s.waiters.clear(); }
 function append(s: Session, text: string) {
@@ -33,7 +33,7 @@ function append(s: Session, text: string) {
 }
 function getSession(id: string, web: any): Session {
   const s = sessions.get(id);
-  if (!s) throw web.error(404, 'Terminal nicht gefunden');
+  if (!s) throw web.error(404, 'Terminal not found');
   return s;
 }
 function dimension(n: unknown, fallback: number, max: number) {
@@ -44,17 +44,17 @@ function getBody(body: any) { return body && typeof body === 'object' ? body : {
 
 export default function createTerminal(_host: any, web: any) {
   if (typeof web.settings === 'function') web.settings([
-    { name: 'keybarVisibility', label: 'Sondertastenleiste anzeigen', type: 'choice', default: 'auto', choices: [
-      { value: 'auto', label: 'Automatisch (Touch-Geräte)' }, { value: 'always', label: 'Immer' }, { value: 'never', label: 'Nie' }
+    { name: 'keybarVisibility', label: 'Show extra key toolbar', type: 'choice', default: 'auto', choices: [
+      { value: 'auto', label: 'Auto (touch devices)' }, { value: 'always', label: 'Always' }, { value: 'never', label: 'Never' }
     ] },
-    { name: 'extendedKeys', label: 'Erweiterte Tasten beim Öffnen anzeigen', type: 'boolean', default: false },
-    { name: 'highlightModifiers', label: 'Aktive Modifier hervorheben', type: 'boolean', default: true },
-    { name: 'hapticFeedback', label: 'Haptisches Feedback', description: 'Nur in Browsern mit Vibrationsunterstützung.', type: 'boolean', default: false },
-    { name: 'lockModifiers', label: 'Modifier per Doppeltippen einrasten', type: 'boolean', default: false },
+    { name: 'extendedKeys', label: 'Show extended keys on opening', type: 'boolean', default: false },
+    { name: 'highlightModifiers', label: 'Highlight active modifiers', type: 'boolean', default: true },
+    { name: 'hapticFeedback', label: 'Haptic feedback', description: 'Only in browsers that support vibration.', type: 'boolean', default: false },
+    { name: 'lockModifiers', label: 'Lock modifiers on double-tap', type: 'boolean', default: false },
   ]);
   web.route('GET', 'sessions', () => ({ sessions: [...sessions.values()].map(s => ({ id:s.id, name:s.name, created:s.created })) }), {access:'owner'});
   web.route('POST', 'sessions', ({body}: any) => {
-    if (sessions.size >= MAX_SESSIONS) throw web.error(409, 'Maximal acht Terminals erlaubt');
+    if (sessions.size >= MAX_SESSIONS) throw web.error(409, 'A maximum of eight terminals is allowed');
     const b = getBody(body);
     const id = randomUUID();
     const name = typeof b.name === 'string' ? b.name.trim().slice(0,48) : '';
@@ -66,12 +66,12 @@ export default function createTerminal(_host: any, web: any) {
     const s: Session = {id, name:name || `Terminal ${sessions.size + 1}`, pty, output:'', offset:0, waiters:new Set(), created:Date.now()};
     sessions.set(id,s);
     pty.onData((data:string) => append(s,data));
-    pty.onExit(({exitCode}:any) => { append(s, `\r\n[Shell beendet: ${exitCode}]\r\n`); sessions.delete(id); wake(s); });
+    pty.onExit(({exitCode}:any) => { append(s, `\r\n[Shell exited: ${exitCode}]\r\n`); sessions.delete(id); wake(s); });
     return {id:s.id,name:s.name,created:s.created};
   }, {access:'owner'});
   web.route('PATCH', 'sessions/:id', ({params,body}:any) => {
     const s = getSession(params.id,web); const name = getBody(body).name;
-    if (typeof name !== 'string' || !name.trim() || name.length > 48) throw web.error(400,'Ungültiger Name');
+    if (typeof name !== 'string' || !name.trim() || name.length > 48) throw web.error(400,'Invalid name');
     s.name = name.trim(); return {ok:true};
   }, {access:'owner'});
   web.route('DELETE', 'sessions/:id', ({params}:any) => {
@@ -79,7 +79,7 @@ export default function createTerminal(_host: any, web: any) {
   }, {access:'owner'});
   web.route('POST', 'sessions/:id/input', ({params,body}:any) => {
     const s = getSession(params.id,web); const data = getBody(body).data;
-    if (typeof data !== 'string' || data.length > MAX_INPUT) throw web.error(400,'Ungültige Eingabe');
+    if (typeof data !== 'string' || data.length > MAX_INPUT) throw web.error(400,'Invalid input');
     s.pty.write(data); return {ok:true};
   }, {access:'owner'});
   web.route('POST', 'sessions/:id/resize', ({params,body}:any) => {
