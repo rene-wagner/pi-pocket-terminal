@@ -1,0 +1,7 @@
+.pt-root{display:flex;flex-direction:column;height:100%;min-height:350px;background:var(--bg);color:var(--text)}
+.pt-toolbar{display:flex;align-items:center;gap:8px;padding:8px;border-bottom:1px solid var(--line)}
+.pt-tabs{display:flex;gap:5px;overflow-x:auto;flex:1;min-width:0}.pt-tab{display:flex;align-items:center;flex-shrink:0;border:1px solid var(--line);border-radius:8px;background:var(--card)}
+.pt-tab.selected{border-color:var(--accent)}.pt-tab button,.pt-keys button{background:none;border:0;color:var(--text);padding:8px;cursor:pointer}.pt-select{max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pt-body{flex:1;min-height:0;background:#11151b;padding:8px;overflow:hidden}.pt-terminal{height:100%;width:100%;touch-action:pan-y}.pt-empty{padding:25px;color:#ccc}
+.pt-keys{display:flex;gap:10px;align-items:center;padding:4px 8px;font-size:12px;color:var(--muted)}
+.pt-root .xterm{height:100%}.pt-root .xterm-viewport{overflow-y:auto}
