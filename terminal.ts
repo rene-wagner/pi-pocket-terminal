@@ -43,6 +43,15 @@ function dimension(n: unknown, fallback: number, max: number) {
 function getBody(body: any) { return body && typeof body === 'object' ? body : {}; }
 
 export default function createTerminal(_host: any, web: any) {
+  if (typeof web.settings === 'function') web.settings([
+    { name: 'keybarVisibility', label: 'Sondertastenleiste anzeigen', type: 'choice', default: 'auto', choices: [
+      { value: 'auto', label: 'Automatisch (Touch-Geräte)' }, { value: 'always', label: 'Immer' }, { value: 'never', label: 'Nie' }
+    ] },
+    { name: 'extendedKeys', label: 'Erweiterte Tasten beim Öffnen anzeigen', type: 'boolean', default: false },
+    { name: 'highlightModifiers', label: 'Aktive Modifier hervorheben', type: 'boolean', default: true },
+    { name: 'hapticFeedback', label: 'Haptisches Feedback', description: 'Nur in Browsern mit Vibrationsunterstützung.', type: 'boolean', default: false },
+    { name: 'lockModifiers', label: 'Modifier per Doppeltippen einrasten', type: 'boolean', default: false },
+  ]);
   web.route('GET', 'sessions', () => ({ sessions: [...sessions.values()].map(s => ({ id:s.id, name:s.name, created:s.created })) }), {access:'owner'});
   web.route('POST', 'sessions', ({body}: any) => {
     if (sessions.size >= MAX_SESSIONS) throw web.error(409, 'Maximal acht Terminals erlaubt');

@@ -1,0 +1,7 @@
+<!doctype html>
+<html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,interactive-widget=resizes-content"><title>Terminal UI test fixture (no shell)</title>
+<script type="importmap">{"imports":{"preact":"/vendor/preact.mjs"}}</script>
+<link rel="stylesheet" href="/terminal/xterm.css"><link rel="stylesheet" href="/terminal/terminal.css">
+<style>
+:root{--bg:#151820;--card:#242936;--text:#f1f3f9;--muted:#a5aabd;--line:#414758;--accent:#8ab8ff;--err:#ff8080;color-scheme:dark;font:14px system-ui}*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text)}#app{height:100dvh;overflow:hidden}button{font:inherit}.button{background:var(--card);color:var(--text);border:1px solid var(--line);border-radius:6px;padding:8px}.error-box{background:#502020;padding:8px}#loading{padding:20px}
+</style></head><body><div id="app"><p id="loading">Loading isolated terminal fixture …</p></div><script>window.onerror=message=>{document.getElementById('loading')?.replaceChildren(String(message));};</script><script type="module" src="/browser.mjs"></script></body></html>

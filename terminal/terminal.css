@@ -1,7 +1,30 @@
-.pt-root{display:flex;flex-direction:column;height:100%;min-height:350px;background:var(--bg);color:var(--text)}
-.pt-toolbar{display:flex;align-items:center;gap:8px;padding:8px;border-bottom:1px solid var(--line)}
-.pt-tabs{display:flex;gap:5px;overflow-x:auto;flex:1;min-width:0}.pt-tab{display:flex;align-items:center;flex-shrink:0;border:1px solid var(--line);border-radius:8px;background:var(--card)}
-.pt-tab.selected{border-color:var(--accent)}.pt-tab button,.pt-keys button{background:none;border:0;color:var(--text);padding:8px;cursor:pointer}.pt-select{max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.pt-body{flex:1;min-height:0;background:#11151b;padding:8px;overflow:hidden}.pt-terminal{height:100%;width:100%;touch-action:pan-y}.pt-empty{padding:25px;color:#ccc}
-.pt-keys{display:flex;gap:10px;align-items:center;padding:4px 8px;font-size:12px;color:var(--muted)}
-.pt-root .xterm{height:100%}.pt-root .xterm-viewport{overflow-y:auto}
+.pt-root{display:flex;flex-direction:column;height:100%;min-height:0;min-width:0;overflow:hidden;box-sizing:border-box;background:var(--bg);color:var(--text)}
+.pt-root *{box-sizing:border-box}
+.pt-toolbar{display:flex;align-items:center;gap:8px;flex-shrink:0;padding:8px;border-bottom:1px solid var(--line);min-width:0}
+.pt-tabs{display:flex;gap:5px;overflow-x:auto;overscroll-behavior-x:contain;flex:1;min-width:0}
+.pt-tab{display:flex;align-items:center;flex-shrink:0;border:1px solid var(--line);border-radius:8px;background:var(--card)}
+.pt-tab.selected{border-color:var(--accent)}
+.pt-tab button,.pt-footer button{background:none;border:0;color:var(--text);padding:8px;cursor:pointer;min-height:44px}
+.pt-select{max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pt-body{flex:1;min-height:0;min-width:0;background:#11151b;padding:8px;overflow:hidden}
+.pt-terminal{height:100%;width:100%;touch-action:pan-y}
+.pt-empty{padding:25px;color:#ccc}
+.pt-error{display:flex;align-items:flex-start;gap:8px;max-height:25%;overflow:auto;flex-shrink:0;font-size:13px}
+.pt-error span{flex:1;overflow-wrap:anywhere}
+.pt-keybar{flex-shrink:0;min-width:0;border-top:1px solid var(--line);background:var(--bg)}
+.pt-key-row{display:flex;gap:5px;align-items:center;min-width:0;padding:5px 8px;overflow-x:auto;overscroll-behavior-x:contain;touch-action:pan-x;scrollbar-width:thin;-webkit-overflow-scrolling:touch}
+.pt-key-row+.pt-key-row{border-top:1px solid var(--line)}
+.pt-root .pt-key{flex:0 0 auto;min-width:44px;min-height:44px;padding:8px 11px;background:var(--card);color:var(--text);border:1px solid var(--line);border-radius:7px;font:inherit;font-size:14px;line-height:1.2;white-space:nowrap;cursor:pointer;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;touch-action:pan-x}
+.pt-root .pt-key:active:not(:disabled){border-color:var(--accent)}
+.pt-root .pt-key.is-active{border-color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent);font-weight:700}
+.pt-root .pt-key.is-locked{border-style:double;border-width:3px;padding:6px 9px}
+.pt-root button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.pt-root button:disabled{opacity:.45;cursor:default}
+.pt-more{margin-left:auto}
+.pt-footer{display:flex;align-items:center;flex-wrap:wrap;gap:2px 8px;flex-shrink:0;padding:0 8px max(0px,env(safe-area-inset-bottom));font-size:12px;color:var(--muted);border-top:1px solid var(--line)}
+.pt-connection{flex:1;min-width:75px}
+.pt-help{flex-shrink:0;max-height:25%;overflow:auto;padding:8px;font-size:12px;color:var(--muted);border-top:1px solid var(--line)}
+.pt-root .xterm{height:100%}
+.pt-root .xterm-viewport{overflow-y:auto}
+@media(max-width:480px){.pt-toolbar{gap:4px;padding:4px}.pt-toolbar>.button{padding:8px;font-size:12px;min-height:44px}.pt-tab button{padding:6px;min-width:32px}.pt-select{max-width:120px}.pt-body{padding:4px}.pt-footer{gap:0 5px;padding-left:4px;padding-right:4px}.pt-footer button{padding:6px}.pt-key-row{padding:4px}.pt-error{margin:4px}}
+@media(max-height:420px){.pt-key-row{padding-top:2px;padding-bottom:2px}.pt-footer button{min-height:36px}.pt-toolbar{padding-top:2px;padding-bottom:2px}}
