@@ -1,0 +1,10 @@
+{
+  "name": "pi-pocket-terminal",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node --test test/*.test.mjs",
+    "test:browser": "node test/serve.mjs",
+    "test:pty": "node test/pty-smoke.mjs"
+  }
+}

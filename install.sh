@@ -5,9 +5,12 @@ HERE="$(cd "$(dirname "$0")" && pwd)"
 mkdir -p "$ROOT/extensions/terminal" "$ROOT/terminal-deps"
 cd "$ROOT/terminal-deps"
 [ -f package.json ] || printf '{"private":true,"type":"commonjs"}\n' > package.json
-npm install --no-audit --no-fund node-pty @xterm/xterm @xterm/addon-fit
+npm install --no-audit --no-fund node-pty @xterm/xterm@6.0.0 @xterm/addon-fit@0.11.0
 cp "$HERE/terminal.ts" "$ROOT/extensions/terminal.ts"
-cp "$HERE/terminal/index.js" "$HERE/terminal/terminal.css" "$ROOT/extensions/terminal/"
+cp "$HERE/terminal/index.js" "$HERE/terminal/terminal.css" \
+  "$HERE/terminal/input-encoder.mjs" "$HERE/terminal/modifiers.mjs" \
+  "$HERE/terminal/input-controller.mjs" "$HERE/terminal/input-queue.mjs" \
+  "$HERE/terminal/preferences.mjs" "$ROOT/extensions/terminal/"
 cp node_modules/@xterm/xterm/css/xterm.css "$ROOT/extensions/terminal/xterm.css"
 # Bundle ESM modules so Pi Pocket's same-origin CSP permits them without a CDN.
 npm install --no-audit --no-fund esbuild
