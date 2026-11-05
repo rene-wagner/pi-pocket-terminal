@@ -28,7 +28,7 @@ export function createInputQueue({ send, onError, chunkSize = 4096, maxPending =
       if (pending.length + data.length > maxPending) {
         connected = false;
         pending = '';
-        onError(new Error('Zu viele ausstehende Eingaben. Nicht gesendete Eingaben wurden verworfen.'));
+        onError(new Error('Too much pending input. Unsent input was discarded.'));
         return false;
       }
       pending += data;

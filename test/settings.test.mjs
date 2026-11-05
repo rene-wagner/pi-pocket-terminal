@@ -17,6 +17,13 @@ test('the extension registers only its existing owner-only routes and documented
   assert.equal(client, 'terminal'); assert.equal(routes.length, 7);
   for (const route of routes) assert.equal(route.options.access, 'owner');
   assert.deepEqual(Object.fromEntries(fields.map(field => [field.name, field.default])), DEFAULT_SETTINGS);
-  assert.deepEqual(fields.find(field => field.name === 'keybarVisibility').choices.map(choice => choice.value), ['auto', 'always', 'never']);
+  assert.deepEqual(fields.map(field => field.label), [
+    'Show extra key toolbar', 'Show extended keys on opening', 'Highlight active modifiers',
+    'Haptic feedback', 'Lock modifiers on double-tap',
+  ]);
+  const visibility = fields.find(field => field.name === 'keybarVisibility');
+  assert.deepEqual(visibility.choices.map(choice => choice.value), ['auto', 'always', 'never']);
+  assert.deepEqual(visibility.choices.map(choice => choice.label), ['Auto (touch devices)', 'Always', 'Never']);
+  assert.equal(fields.find(field => field.name === 'hapticFeedback').description, 'Only in browsers that support vibration.');
   cleanup();
 });

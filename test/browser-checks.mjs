@@ -78,7 +78,7 @@ export async function runBrowserChecks() {
     mock.output('one', '\x1b[?1l'); await wait(200);
   });
   await check('extended keys distinguish Delete and Backspace and support F12 and Shift', async () => {
-    await click('Mehr'); clear(); await click('Del'); await click('⌫'); await click('F12'); await click('Shift'); await click('/');
+    await click('More'); clear(); await click('Del'); await click('⌫'); await click('F12'); await click('Shift'); await click('/');
     equal(data(), '\x1b[3~\x7f\x1b[24~?');
   });
   await check('locks survive input and a normal tap releases them', async () => {
@@ -103,15 +103,15 @@ export async function runBrowserChecks() {
     clear(); const field = textarea(); mock.failure = 'input'; await click('Enter'); assert(key('Enter').disabled, 'Keys stayed enabled');
     assert(textarea() === field, 'Error banner remounted terminal and cleared the failure latch');
     const confirm = window.confirm; window.confirm = () => true; mock.failure = 'sessions/one';
-    try { document.querySelector('[aria-label="Terminal 1 schließen"]').click(); await wait(); }
+    try { document.querySelector('[aria-label="Close Terminal 1"]').click(); await wait(); }
     finally { window.confirm = confirm; }
     assert(textarea() === field && key('Enter').disabled, 'Inactive-tab deletion failure cleared the input-failure latch');
-    await click('↑'); equal(data(), ''); mock.failure = null; await click('Neu verbinden'); await wait(150);
+    await click('↑'); equal(data(), ''); mock.failure = null; await click('Reconnect'); await wait(150);
     assert(!key('Enter').disabled, 'Reconnect failed'); await click('Enter'); equal(data(), '\r');
   });
   await check('closed sessions disable further input', async () => {
     mock.sessions.delete('two'); await wait(250); clear(); assert(key('Enter').disabled, 'Closed session still accepts keys'); await click('Enter'); equal(data(), '');
-    await click('Neu verbinden'); await wait(150); assert(document.querySelector('.pt-tab.selected').textContent.includes('Terminal 1'), 'Session list did not recover');
+    await click('Reconnect'); await wait(150); assert(document.querySelector('.pt-tab.selected').textContent.includes('Terminal 1'), 'Session list did not recover');
   });
   await check('visibility settings and layout remain bounded', async () => {
     mock.settings({ keybarVisibility: 'never' }); await wait(); assert(!document.querySelector('.pt-keybar'), 'Never setting ignored');

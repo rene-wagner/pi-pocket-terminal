@@ -18,4 +18,4 @@ cp "$HERE/terminal/xterm-entry.js" "$HERE/terminal/fit-entry.js" "$ROOT/terminal
 ./node_modules/.bin/esbuild "$ROOT/terminal-deps/xterm-entry.js" --bundle --format=esm --platform=browser --outfile="$ROOT/extensions/terminal/xterm.mjs"
 ./node_modules/.bin/esbuild "$ROOT/terminal-deps/fit-entry.js" --bundle --format=esm --platform=browser --outfile="$ROOT/extensions/terminal/fit.mjs"
 sed -i "1i @import './xterm.css';" "$ROOT/extensions/terminal/terminal.css"
-printf 'Installiert unter %s/extensions/terminal.ts\nPi Pocket: Menü → Extensions → terminal aktivieren.\n' "$ROOT"
+printf 'Installed at %s/extensions/terminal.ts\nPi Pocket: enable terminal under Menu → Extensions.\n' "$ROOT"
